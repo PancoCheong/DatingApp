@@ -32,9 +32,22 @@ namespace DatingApp.API
         {   //ordering of service is not important in here
             services.AddDbContext<DataContext>(x => x.UseSqlite(
                 Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddControllers();
 
-            services.AddCors(); //CROS policy for HTTP header
+            //for .net core 2.0 to 3.0
+            //services.AddCors(); //CROS policy for HTTP header
+            //for .net core 3.1
+            //cannot use both options.AllowAnyOrigin() and authentication middleware.
+            //have to explicitly define allowed origins. 
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            {
+                builder
+                    .WithOrigins(new[] { "http://localhost:4200" })
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            }));
 
             // 3 ways to make AuthRepository available to other classes in this application
             // use servcies container to inject repository to other classess
@@ -76,8 +89,11 @@ namespace DatingApp.API
             app.UseRouting();
 
             //write a CROS header response before response back to client
-            //.net core 2.0, go before app.UseMvc(); 3.0 after app.UseRouting();
-            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyMethod());
+            //.net core 2.0, go before app.UseMvc(); 3.0 after app.UseRouting() and before app.UseEndpoints()
+            //app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyMethod());
+
+            // for .net 3.1, you cannot use both options.AllowAnyOrigin() and authentication middleware
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
