@@ -1,0 +1,20 @@
+<div class="container mt-5"> <!--margin top distance 5 (range 1 to 6)-->
+  <div *ngIf="!registerMode" class="text-center">
+    <h1>Find your match</h1>
+    <p class="lead">Come on in to view your matches... All you need to do is sign up!</p>
+    <div class="text-center">
+      <button class="btn btn-primary btn-lg mr-2" (click)="registerToggle()">Register</button> <!--margin-right 2-->
+      <button class="btn btn-info btn-lg">Learn More</button>
+    </div>
+  </div>
+
+  <!-- display register form, bootstrap 12 columns in total and we use 4 only-->
+  <div *ngIf="registerMode" class="container">
+    <div class="row justify-content-center">
+      <div class="col-4">
+        <!-- input use [], output use () and call function-->
+        <app-register [valuesFromHome]="values" (cancelRegister)="cancelRegisterMode($event)"></app-register>
+      </div>
+    </div>
+  </div>
+</div>
