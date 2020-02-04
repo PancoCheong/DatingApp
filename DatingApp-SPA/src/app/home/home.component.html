@@ -13,7 +13,7 @@
     <div class="row justify-content-center">
       <div class="col-4">
         <!-- input use [], output use () and call function-->
-        <app-register [valuesFromHome]="values" (cancelRegister)="cancelRegisterMode($event)"></app-register>
+        <app-register (cancelRegister)="cancelRegisterMode($event)"></app-register>
       </div>
     </div>
   </div>
