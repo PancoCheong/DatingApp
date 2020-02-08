@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using DatingApp.API.Data;
 using DatingApp.API.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,7 +38,12 @@ namespace DatingApp.API
             services.AddDbContext<DataContext>(x => x.UseSqlite(
                 Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(opt =>
+              {
+                  opt.SerializerSettings.ReferenceLoopHandling =
+                  Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                  // ignore Self referencing loop detected for property 'user' error
+              });
 
             //for .net core 2.0 to 3.0
             //services.AddCors(); //CROS policy for HTTP header
@@ -56,9 +62,13 @@ namespace DatingApp.API
             // 3 ways to make AuthRepository available to other classes in this application
             // use servcies container to inject repository to other classess
 
+            // need to specify which Assembly we will use Auto Mapper
+            services.AddAutoMapper(typeof(DatingRepository).Assembly);
+
             //services.AddSingleton(); //create single instance of repository thru-out the application and reuse it, have issue on concurrent requests
             //services.AddTransient(); // for lightweight stateless service, new instance of repository is created on each call of repository
             services.AddScoped<IAuthRepository, AuthRepository>(); // repository is created once per each HTTP request, reuse it during the same session.
+            services.AddScoped<IDatingRepository, DatingRepository>();
 
             services.AddAuthentication(x =>
             {
