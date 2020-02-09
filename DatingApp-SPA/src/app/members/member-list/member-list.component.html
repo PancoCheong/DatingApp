@@ -1,0 +1,11 @@
+<div class="container mt-5">
+  <div class="row">
+    <!-- div.col-lg-2.col-md-3.col-sm-6 press TAB key -->
+    <!--  Large Screen, each colummn takes 2 grid, means 6 elements -->
+    <!-- Medium Screen, each colummn takes 3 grid, means 4 elements -->
+    <!-- Small  Screen, each colummn takes 6 grid, means 2 elements -->
+    <div *ngFor="let user of users" class="col-lg-2 col-md-3 col-sm-6">
+      <app-member-card [user]="user"></app-member-card>
+    </div>
+  </div>
+</div>
