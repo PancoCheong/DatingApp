@@ -59,6 +59,9 @@ namespace DatingApp.API
                     .AllowCredentials();
             }));
 
+            // binding the appsettings to data class
+            services.Configure<CloudinarySettings>(Configuration.GetSection("CloudinarySettings"));
+
             // 3 ways to make AuthRepository available to other classes in this application
             // use servcies container to inject repository to other classess
 
