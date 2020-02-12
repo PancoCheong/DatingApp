@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Photo } from 'src/app/_models/photo';
 import { FileUploader } from 'ng2-file-upload';
 import { environment } from 'src/environments/environment';
@@ -13,6 +13,7 @@ import { AlertifyService } from 'src/app/_services/alertify.service';
 })
 export class PhotoEditorComponent implements OnInit {
   @Input() photos: Photo[];
+  @Output() getMemberPhotoChange = new EventEmitter<string>();
   baseUrl = environment.apiUrl;
   uploader: FileUploader;
   hasBaseDropZoneOver = false;
@@ -74,10 +75,36 @@ export class PhotoEditorComponent implements OnInit {
         this.currentMainPhoto = this.photos.filter(p => p.isMain === true)[0];
         this.currentMainPhoto.isMain = false;
         photo.isMain = true;
+
+        /* update the main photo on the left */
+        /*this.getMemberPhotoChange.emit(photo.url);*/
+        this.authService.changeMemberPhoto(photo.url);
+        /* update the user in local storage */
+        this.authService.currentUser.photoUrl = photo.url;
+        localStorage.setItem('user', JSON.stringify(this.authService.currentUser));
       },
       error => {
         this.alertify.error(error);
       }
     );
+  }
+
+  deletePhoto(id: number) {
+    /* param: 1-string, 2-callback function */
+    this.alertify.confirm('Are you sure you want to delete this photo?', () => {
+      this.userService.deletePhoto(this.authService.decodedToken.nameid, id).subscribe(
+        () => {
+          /* remove photo from photos array, (index, delete how many element) */
+          this.photos.splice(
+            this.photos.findIndex(p => p.id === id),
+            1
+          );
+          this.alertify.success('Photo has been deleted');
+        },
+        error => {
+          this.alertify.error('Failed to delete the photo');
+        }
+      );
+    });
   }
 }
