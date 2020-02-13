@@ -52,22 +52,20 @@ namespace DatingApp.API.Controllers
             if (await _repo.UserExists(userForRegisterDto.Username))
                 return BadRequest("Username already exists.");
 
-            var userToCreate = new User
+            var userToCreate = _mapper.Map<User>(userForRegisterDto); /* use Auto Mapper */
+            /*new User
             {
                 Username = userForRegisterDto.Username
-            };
+            };*/
 
             var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
 
-            // proper way to return success message to caller is
-            // return CreatedAtRoute();
-            // send back the client the lcoation of newly created entity (ie. user)
-
-            // we don't have get user method yet
-            // so we simple return HTTP 201 at the time being 
-            return StatusCode(201);
-
-            //TODO: fix return CreatedAtRoute
+            //return StatusCode(201);
+            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
+            return CreatedAtRoute("GetUser", new { controller = "Users", id = createdUser.Id }, userToReturn);
+            // give GetUser method of UsersController a name
+            // use Anonymous object to call UsersController
+            // reuse UserForDetailedDto for return as createdUser has password info 
         }
 
         [HttpPost("login")]
