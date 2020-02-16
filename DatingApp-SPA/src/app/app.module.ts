@@ -13,6 +13,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BsDropdownModule, TabsModule, BsDatepickerModule } from 'ngx-bootstrap';
 import { NgxGalleryModule } from 'ngx-gallery';
 import { FileUploadModule } from 'ng2-file-upload';
+import { TimeAgoPipe } from 'time-ago-pipe';
 
 /* local module */
 import { AppComponent } from './app.component';
@@ -55,7 +56,8 @@ export class CustomHammerConfig extends HammerGestureConfig {
     MemberEditComponent,
     PhotoEditorComponent,
     ListsComponent,
-    MessagesComponent
+    MessagesComponent,
+    TimeAgoPipe
   ],
   imports: [
     BrowserModule,

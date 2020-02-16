@@ -72,6 +72,7 @@ namespace DatingApp.API
             //services.AddTransient(); // for lightweight stateless service, new instance of repository is created on each call of repository
             services.AddScoped<IAuthRepository, AuthRepository>(); // repository is created once per each HTTP request, reuse it during the same session.
             services.AddScoped<IDatingRepository, DatingRepository>();
+            services.AddScoped<LogUserActivity>();
 
             services.AddAuthentication(x =>
             {
