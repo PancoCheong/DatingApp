@@ -29,18 +29,16 @@ export class MemberMessagesComponent implements OnInit {
     const currentUserId = +this.authService.decodedToken.nameid;
     this.userService
       .getMessageThread(this.authService.decodedToken.nameid, this.recipientId)
-      // .pipe(
-      //   tap(messages => {
-      //     for (let i = 0; i < messages.length; i++) {
-      //       if (
-      //         messages[i].isRead === false &&
-      //         messages[i].recipientId === currentUserId
-      //       ) {
-      //         this.userService.markAsRead(currentUserId, messages[i].id);
-      //       }
-      //     }
-      //   })
-      // )
+      .pipe(
+        /* tap operator - allow to do something before subscribe (used to call do, not tap) */
+        tap(messages => {
+          for (let i = 0; i < messages.length; i++) {
+            if (messages[i].isRead === false && messages[i].recipientId === currentUserId) {
+              this.userService.markAsRead(currentUserId, messages[i].id);
+            }
+          }
+        })
+      )
       .subscribe(
         messages => {
           this.messages = messages;
@@ -55,8 +53,9 @@ export class MemberMessagesComponent implements OnInit {
     this.newMessage.recipientId = this.recipientId;
     this.userService.sendMessage(this.authService.decodedToken.nameid, this.newMessage).subscribe(
       (message: Message) => {
-        this.messages.unshift(message);
-        this.newMessage.content = '';
+        /*debugger; add breakpoint, use chrome to debug; TSLint treats this as error, but it doesn't matter */
+        this.messages.unshift(message); /*add message to the start of the array*/
+        this.newMessage.content = ''; /* clear after sent */
       },
       error => {
         this.alertify.error(error);
