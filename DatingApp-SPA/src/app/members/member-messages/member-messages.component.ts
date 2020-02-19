@@ -32,9 +32,9 @@ export class MemberMessagesComponent implements OnInit {
       .pipe(
         /* tap operator - allow to do something before subscribe (used to call do, not tap) */
         tap(messages => {
-          for (let i = 0; i < messages.length; i++) {
-            if (messages[i].isRead === false && messages[i].recipientId === currentUserId) {
-              this.userService.markAsRead(currentUserId, messages[i].id);
+          for (const message of messages) {
+            if (message.isRead === false && message.recipientId === currentUserId) {
+              this.userService.markAsRead(currentUserId, message.id);
             }
           }
         })
