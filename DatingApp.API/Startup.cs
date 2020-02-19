@@ -133,9 +133,15 @@ namespace DatingApp.API
             app.UseAuthentication();
             app.UseAuthorization();
 
+            // look for index.html
+            app.UseDefaultFiles();
+            // serve static files (auto look for wwwroot folder)
+            app.UseStaticFiles();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToController("Index", "Fallback");
             });
         }
     }
