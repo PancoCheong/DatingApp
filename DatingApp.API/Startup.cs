@@ -34,15 +34,21 @@ namespace DatingApp.API
 
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(x => x.UseSqlite(
-                Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<DataContext>(x =>
+            {
+                x.UseLazyLoadingProxies();
+                x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+            });
             ConfigureServices(services);
         }
 
         public void ConfigureProductionServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(x => x.UseMySql(
-                Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<DataContext>(x =>
+            {
+                x.UseLazyLoadingProxies();
+                x.UseMySql(Configuration.GetConnectionString("DefaultConnection"));
+            });
             ConfigureServices(services);
         }
 
@@ -50,11 +56,11 @@ namespace DatingApp.API
         public void ConfigureServices(IServiceCollection services)
         {   //ordering of service is not important in here
             services.AddControllers().AddNewtonsoftJson(opt =>
-              {
-                  opt.SerializerSettings.ReferenceLoopHandling =
-                  Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-                  // ignore Self referencing loop detected for property 'user' error
-              });
+            {
+                opt.SerializerSettings.ReferenceLoopHandling =
+                    Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                // ignore Self referencing loop detected for property 'user' error
+            });
 
             //for .net core 2.0 to 3.0
             //services.AddCors(); //CROS policy for HTTP header
