@@ -26,5 +26,7 @@
                 }
             }
         ]
-    }
+    },
+    "appService.defaultWebAppToDeploy": "/subscriptions/cb4646ff-9f3d-4805-8fc6-5590c90d17a8/resourceGroups/DatingAppResourceGroup/providers/Microsoft.Web/sites/datingapp3",
+    "appService.deploySubpath": "DatingApp.API\\bin\\Release\\netcoreapp3.1\\publish"
 }

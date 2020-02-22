@@ -47,7 +47,7 @@ namespace DatingApp.API
             services.AddDbContext<DataContext>(x =>
             {
                 x.UseLazyLoadingProxies();
-                x.UseMySql(Configuration.GetConnectionString("DefaultConnection"));
+                x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
             ConfigureServices(services);
         }
@@ -134,10 +134,10 @@ namespace DatingApp.API
                         }
                     });
                 });
-                //app.UseHsts();
+                app.UseHsts(); // transport security - write to response header
             }
-
-            // app.UseHttpsRedirection();
+            //app.UseDeveloperExceptionPage(); // only for initial troubleshooting for Azure deployment
+            app.UseHttpsRedirection(); //
 
             app.UseRouting();
 
