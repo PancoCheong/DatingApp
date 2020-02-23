@@ -7,13 +7,17 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DatingApp.API.Data;
 using DatingApp.API.Helpers;
+using DatingApp.API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,12 +59,60 @@ namespace DatingApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {   //ordering of service is not important in here
-            services.AddControllers().AddNewtonsoftJson(opt =>
-            {
-                opt.SerializerSettings.ReferenceLoopHandling =
-                    Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-                // ignore Self referencing loop detected for property 'user' error
+            // AddIdentityCore - Role services is not added by default
+            // AddIdentity - use all defaults configuration and use Cookie, not JWT
+            IdentityBuilder builder = services.AddIdentityCore<User>(opt =>
+            {   // should not turn off in Production
+                opt.Password.RequireDigit = false;
+                opt.Password.RequiredLength = 6;
+                opt.Password.RequireNonAlphanumeric = false;
+                opt.Password.RequireUppercase = false;
             });
+            // add all services that we needed
+            builder = new IdentityBuilder(builder.UserType, typeof(Role), builder.Services);
+            builder.AddEntityFrameworkStores<DataContext>();    // create user stores in database
+            builder.AddRoleValidator<RoleValidator<Role>>();    // we use Role
+            builder.AddRoleManager<RoleManager<Role>>();        //  
+            builder.AddSignInManager<SignInManager<User>>();    //
+
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("ModeratePhotoRole", policy => policy.RequireRole("Admin", "Moderate"));
+                options.AddPolicy("VipOnly", policy => policy.RequireRole("VIP"));
+            });
+
+            services.AddControllers(options =>
+            {   // define authoization policy - all user must authenticate by default
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            }).AddNewtonsoftJson(opt =>
+                {
+                    opt.SerializerSettings.ReferenceLoopHandling =
+                        Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                    // ignore Self referencing loop detected for property 'user' error
+                });
 
             //for .net core 2.0 to 3.0
             //services.AddCors(); //CROS policy for HTTP header
@@ -87,28 +139,11 @@ namespace DatingApp.API
 
             //services.AddSingleton(); //create single instance of repository thru-out the application and reuse it, have issue on concurrent requests
             //services.AddTransient(); // for lightweight stateless service, new instance of repository is created on each call of repository
-            services.AddScoped<IAuthRepository, AuthRepository>(); // repository is created once per each HTTP request, reuse it during the same session.
+
+            //services.AddScoped<IAuthRepository, AuthRepository>(); // repository is created once per each HTTP request, reuse it during the same session.
             services.AddScoped<IDatingRepository, DatingRepository>();
             services.AddScoped<LogUserActivity>();
 
-            services.AddAuthentication(x =>
-            {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(x =>
-            {
-                x.RequireHttpsMetadata = false;
-                x.SaveToken = true;
-                x.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -148,7 +183,7 @@ namespace DatingApp.API
             // for .net 3.1, you cannot use both options.AllowAnyOrigin() and authentication middleware
             app.UseCors("CorsPolicy");
 
-            app.UseAuthentication();
+            app.UseAuthentication(); // Authentication must be before Authorization
             app.UseAuthorization();
 
             // look for index.html

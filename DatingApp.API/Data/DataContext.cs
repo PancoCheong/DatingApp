@@ -1,13 +1,17 @@
 using DatingApp.API.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatingApp.API.Data
 {
-    public class DataContext : DbContext
+    // <...> specify the types in IdentityDbContext, because we use <int> for Id
+    public class DataContext : IdentityDbContext<User, Role, int, IdentityUserClaim<int>,
+    UserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
         public DbSet<Value> Values { get; set; }
-        public DbSet<User> Users { get; set; }
+        //public DbSet<User> Users { get; set; }  //IdentityDbContext will provide a set of Users tables 
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Like> Likes { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -15,6 +19,22 @@ namespace DatingApp.API.Data
         // Define relationship using Fluent API
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder); //for Identity and Role
+            builder.Entity<UserRole>(userRole =>
+            {
+                userRole.HasKey(ur => new { ur.UserId, ur.RoleId });
+
+                userRole.HasOne(ur => ur.Role)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(ur => ur.RoleId)
+                    .IsRequired();
+
+                userRole.HasOne(ur => ur.User)
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(ur => ur.UserId)
+                    .IsRequired();
+            });
+
             // define primary key
             // Liker can like the same likee just once 
             builder.Entity<Like>()

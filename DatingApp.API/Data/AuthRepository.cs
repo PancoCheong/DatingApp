@@ -13,16 +13,17 @@ namespace DatingApp.API.Data
         {
             _context = context;
         }
-        public async Task<User> Login(string username, string password)
+        public async Task<User> Login(string userName, string password)
         {
             //get user profile from DB
-            var user = await _context.Users.Include(p => p.Photos).FirstOrDefaultAsync(x => x.Username == username);
+            var user = await _context.Users.Include(p => p.Photos).FirstOrDefaultAsync(x => x.UserName == userName);
 
             if (user == null)
                 return null;
 
-            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;
+            // defer this to SignIn Manager
+            // if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+            //     return null;
 
             return user;
         }
@@ -45,8 +46,9 @@ namespace DatingApp.API.Data
             byte[] passwordHash, passwordSalt;
             CreatePasswordHash(password, out passwordHash, out passwordSalt);
 
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+            // no needed for MS Identity 
+            // user.PasswordHash = passwordHash;
+            // user.PasswordSalt = passwordSalt;
 
             await _context.Users.AddAsync(user); //Add to DbSet
             await _context.SaveChangesAsync(); //save to DB
@@ -67,9 +69,9 @@ namespace DatingApp.API.Data
             }
         }
 
-        public async Task<bool> UserExists(string username)
+        public async Task<bool> UserExists(string userName)
         {
-            if (await _context.Users.AnyAsync(x => x.Username == username))
+            if (await _context.Users.AnyAsync(x => x.UserName == userName))
                 return true;
 
             return false;

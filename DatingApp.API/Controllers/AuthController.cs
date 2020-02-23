@@ -10,22 +10,29 @@ using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
 namespace DatingApp.API.Controllers
 {
     // /api/auth
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthRepository _repo;
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AuthController(IAuthRepository repo, IConfiguration config, IMapper mapper)
+        public AuthController(IConfiguration config, IMapper mapper,
+        UserManager<User> userManager, SignInManager<User> signInManager)
         {
+            _signInManager = signInManager;
+            _userManager = userManager;
             _mapper = mapper;
-            _repo = repo;
             _config = config;
         }
 
@@ -46,53 +53,72 @@ namespace DatingApp.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
         {
-            //convert to lowercase
-            userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
-
-            if (await _repo.UserExists(userForRegisterDto.Username))
-                return BadRequest("Username already exists.");
+            //ASP Identity take care of both unique username and duplicated user check
+            // userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
+            // if (await _repo.UserExists(userForRegisterDto.Username))
+            //     return BadRequest("Username already exists.");
 
             var userToCreate = _mapper.Map<User>(userForRegisterDto); /* use Auto Mapper */
-            /*new User
+
+            // use Identity user Manager instead of our Repo
+            var result = await _userManager.CreateAsync(userToCreate, userForRegisterDto.Password);
+            //var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
+
+            var userToReturn = _mapper.Map<UserForDetailedDto>(userToCreate);
+            if (result.Succeeded)
             {
-                Username = userForRegisterDto.Username
-            };*/
+                return CreatedAtRoute("GetUser", new { controller = "Users", id = userToCreate.Id }, userToReturn);
+            }
 
-            var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
-
-            //return StatusCode(201);
-            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
-            return CreatedAtRoute("GetUser", new { controller = "Users", id = createdUser.Id }, userToReturn);
-            // give GetUser method of UsersController a name
-            // use Anonymous object to call UsersController
-            // reuse UserForDetailedDto for return as createdUser has password info 
+            return BadRequest(result.Errors);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
         {
-            //try
-            //{
+            //no longer user this login method
+            //var userFromRepo = await _repo.Login(userForLoginDto.Username.ToLower(), userForLoginDto.Password); 
+            var user = await _userManager.FindByNameAsync(userForLoginDto.Username);
+            var result = await _signInManager.CheckPasswordSignInAsync(
+                user, userForLoginDto.Password, false); // false - not lock out user when attempting to sign in  
 
-            //throw new Exception("Computer says no!");
-
-            var userFromRepo = await _repo.Login(
-                userForLoginDto.Username.ToLower(), userForLoginDto.Password);
-
-            if (userFromRepo == null)
-                return Unauthorized();
-
-            var claims = new[]
+            //if (userFromRepo == null) return Unauthorized();
+            if (result.Succeeded)
             {
-                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                new Claim(ClaimTypes.Name, userFromRepo.Username)
+                var appUser = _mapper.Map<UserForListDto>(user);
+
+                return Ok(new
+                {
+                    token = GenerateJwtToken(user),
+                    user = appUser
+                });
+            }
+
+            return Unauthorized();
+        }
+
+        private async Task<string> GenerateJwtToken(User user)
+        {
+            // Generate the JWT token
+            // building a list of claims for user
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName)
             };
 
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            // set the symmetric key for encryption
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _config.GetSection("AppSettings:Token").Value)); //read appsettings.json config
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
+            // create the JWT token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -101,23 +127,9 @@ namespace DatingApp.API.Controllers
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            // you may create new DTO to pass main photo URL back
-            // in this example, we reuse the existing UserForListDto
-            var user = _mapper.Map<UserForListDto>(userFromRepo);
-
-            return Ok(new
-            {
-                token = tokenHandler.WriteToken(token),
-                user
-            });
-            //}
-            //catch
-            //{
-            //    return StatusCode(500, "Computer really says no!");
-            //}
+            return tokenHandler.WriteToken(token);
         }
     }
 }
