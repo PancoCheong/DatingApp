@@ -24,9 +24,9 @@ export class AdminService {
   }
 
   approvePhoto(photoId) {
-    return this.http.get(this.baseUrl + 'admin/approvePhoto/' + photoId, {});
+    return this.http.post(this.baseUrl + 'admin/approvePhoto/' + photoId, {});
   }
   rejectPhoto(photoId) {
-    return this.http.get(this.baseUrl + 'admin/rejectPhoto/' + photoId, {});
+    return this.http.post(this.baseUrl + 'admin/rejectPhoto/' + photoId, {});
   }
 }
