@@ -22,7 +22,7 @@ namespace DatingApp.API.Helpers
             var userId = int.Parse(resultContext.HttpContext.User
             .FindFirst(ClaimTypes.NameIdentifier).Value); //get User ID from token
             var repo = resultContext.HttpContext.RequestServices.GetService<IDatingRepository>(); //IDating is a service in Startup.cs
-            var user = await repo.GetUser(userId);
+            var user = await repo.GetUser(userId, true);
             user.LastActive = DateTime.Now;
             await repo.SaveAll();
         }

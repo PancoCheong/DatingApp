@@ -39,17 +39,19 @@ namespace DatingApp.API.Data
 
         public async Task<Photo> GetPhoto(int id)
         {
-            var photo = await _context.Photos.FirstOrDefaultAsync(p => p.Id == id);
+            var photo = await _context.Photos.IgnoreQueryFilters() //still allow to delete un-approved photo
+                .FirstOrDefaultAsync(p => p.Id == id);
             return photo;
         }
 
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUser(int id, bool isCurrentUser)
         {
-            // Photo is navigation property
-            // remove Include as Lazy Loading will help to load it
-            var user = await _context.Users
-                //.Include(p => p.Photos) // replace by Lazy loading
-                .FirstOrDefaultAsync(u => u.Id == id);
+            var query = _context.Users.Include(p => p.Photos).AsQueryable();
+
+            if (isCurrentUser)
+                query = query.IgnoreQueryFilters(); //ignore Global Query Filter
+
+            var user = await query.FirstOrDefaultAsync(u => u.Id == id);
             return user;
         }
 

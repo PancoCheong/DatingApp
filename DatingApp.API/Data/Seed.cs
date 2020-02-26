@@ -32,6 +32,7 @@ namespace DatingApp.API.Data
 
                 foreach (var user in users)
                 {
+                    user.Photos.SingleOrDefault().IsApproved = true;
                     userManager.CreateAsync(user, "password").Wait(); // add .Wait() because SeedUsers method is no async
                     userManager.AddToRoleAsync(user, "Member").Wait();
                     // byte[] passwordHash, passwordSalt;

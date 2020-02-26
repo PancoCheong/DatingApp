@@ -65,6 +65,9 @@ namespace DatingApp.API.Data
                 .HasOne(u => u.Recipient)
                 .WithMany(m => m.MessagesReceived)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //do not return un-approved photo by default. photo owner login requires to by-pass this filter
+            builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
         }
     }
 }
