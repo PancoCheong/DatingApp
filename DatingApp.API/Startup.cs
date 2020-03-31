@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -189,7 +191,11 @@ namespace DatingApp.API
             // look for index.html
             app.UseDefaultFiles();
             // serve static files (auto look for wwwroot folder)
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {   // For upload file, set StaticFiles folder to be servable http://localhost:5000/staticfiles/
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"StaticFiles")),
+                RequestPath = new PathString("/StaticFiles")
+            });
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,4 +1,7 @@
+using System;
+using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -9,6 +12,8 @@ using DatingApp.API.Dtos;
 using DatingApp.API.Helpers;
 using DatingApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -60,27 +65,55 @@ namespace DatingApp.API.Controllers
 
             var file = photoForCreationDto.File;
 
-            var uploadResult = new ImageUploadResult();
+            //var uploadResult = new ImageUploadResult();
+            // if (file.Length > 0)
+            // {
+            //     // read the file into memory
+            //     using (var stream = file.OpenReadStream())
+            //     {
+            //         var uploadParams = new ImageUploadParams()
+            //         {
+            //             File = new FileDescription(file.Name, stream),
+            //             Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
+            //             // if image is large, it focus on the face of the image 
+            //             // and crop the image around the face to target size
+            //         };
 
-            if (file.Length > 0)
+            //         uploadResult = _cloudinary.Upload(uploadParams);
+            //     }
+            // }
+            // photoForCreationDto.Url = uploadResult.Uri.ToString();
+            // photoForCreationDto.PublicId = uploadResult.PublicId;
+
+            try
             {
-                // read the file into memory
-                using (var stream = file.OpenReadStream())
+                var folderName = Path.Combine("StaticFiles", "Images");
+                var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (file.Length > 0)
                 {
-                    var uploadParams = new ImageUploadParams()
-                    {
-                        File = new FileDescription(file.Name, stream),
-                        Transformation = new Transformation().Width(500).Height(500).Crop("fill").Gravity("face")
-                        // if image is large, it focus on the face of the image 
-                        // and crop the image around the face to target size
-                    };
+                    var uri = new Uri(HttpContext.Request.GetDisplayUrl());
+                    var domainName = uri.GetLeftPart(UriPartial.Authority); //get http://localhost:5000
+                    var fileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+                    var fullPath = Path.Combine(pathToSave, fileName);
+                    photoForCreationDto.Url = domainName + Path.AltDirectorySeparatorChar +
+                        Path.Combine(folderName, fileName).Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    //photoForCreationDto.PublicId = domainName;
 
-                    uploadResult = _cloudinary.Upload(uploadParams);
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+                    //return Ok(new { dbPath });
+                }
+                else
+                {
+                    return BadRequest("Upload file is empty");
                 }
             }
-
-            photoForCreationDto.Url = uploadResult.Uri.ToString();
-            photoForCreationDto.PublicId = uploadResult.PublicId;
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex}");
+            }
 
             var photo = _mapper.Map<Photo>(photoForCreationDto);
 
