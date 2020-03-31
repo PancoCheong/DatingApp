@@ -1,0 +1,799 @@
+{
+	"info": {
+		"_postman_id": "ff84403e-5e7a-4b84-91cb-4193ae70ef2d",
+		"name": "DatingApp",
+		"description": "Udemy - Build an app with ASPNET Core and Angular from scratch",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "cc23bc52-6d8c-4fed-8ea0-8036ac90f9b2",
+						"exec": [
+							"console.log(\"before: \" + pm.environment.get(\"token\"));",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "31850d10-f452-4682-8410-57a3a5611f0b",
+						"exec": [
+							"var data = pm.response.json();",
+							"pm.environment.set(\"token\", data.token)",
+							"console.log(\"after: \" + pm.variables.get(\"token\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"password\"\r\n}\r\n",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/auth/login",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register-Simple",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"Panco\",\r\n  \"password\": \"password\"\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/auth/register",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Users",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/users",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Users with Page Params",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/users?pageNumber=1&pageSize=30&gender=female&likers=false&likees=true",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users"
+					],
+					"query": [
+						{
+							"key": "pageNumber",
+							"value": "1"
+						},
+						{
+							"key": "pageSize",
+							"value": "30"
+						},
+						{
+							"key": "gender",
+							"value": "female"
+						},
+						{
+							"key": "likers",
+							"value": "false"
+						},
+						{
+							"key": "likees",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI3IiwidW5pcXVlX25hbWUiOiJzaW1vbiIsIm5iZiI6MTU4MTI1NDQxOCwiZXhwIjoxNTgxMzQwODE4LCJpYXQiOjE1ODEyNTQ0MTh9.TMDXm6V_qmd3XQRu0mgCoUNl2KAynCBwtZOD8mihYTwyxN6H7_8wQu9_gZOUobtCtz5MWAQb9b3IuON8W6o9lA",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"introduction\": \"Updated Introduction\",\r\n    \"lookingFor\": \"Updated Looking For\",\r\n    \"interests\": \"Updated Interests\",\r\n    \"city\": \"Taipa\",\r\n    \"country\": \"Macau\"\r\n}\r\n"
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7?",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7"
+					],
+					"query": [
+						{
+							"key": "Authorization",
+							"value": "Bearer {{token}}",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpPhoto",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "File",
+							"type": "file",
+							"src": "/C:/repos/DatingApp/Photo/Wonder1.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/photos",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"photos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SetMainPhoto",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/photos/12/setMain",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"photos",
+						"12",
+						"setMain"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DelPhoto",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "File",
+							"type": "file",
+							"src": "/C:/repos/DatingApp/Photo/Wonder1.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/photos/13",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"photos",
+						"13"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{       \r\n    \"gender\": \"male\",\r\n\t\"username\": \"panco\",\r\n    \"knownAs\": \"Big Bird\",\r\n    \"dateOfBirth\": \"09/18/1975\",\r\n    \"city\": \"Taipa\",\r\n    \"country\": \"Macau\",\r\n    \"password\": \"password\"\r\n}"
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/auth/register",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Like User",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "File",
+							"type": "file",
+							"src": [],
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/like/3",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"like",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send Message",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"recipientId\": \"3\",\n\t\"content\": \"Test message from Simon to Susie, Again\"\n}"
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/messages",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"messages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Message",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/messages?messageContainer=Outbox",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"messages"
+					],
+					"query": [
+						{
+							"key": "messageContainer",
+							"value": "Outbox"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Message Thread",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/users/7/messages/thread/3",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"7",
+						"messages",
+						"thread",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Values",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/values",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"values"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Value",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/values/1",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"values",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "usersWithRoles",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/admin/usersWithRoles",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"usersWithRoles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "photosForModeration",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{ApiHost}}/api/admin/photosForModeration",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"photosForModeration"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EditRoles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"roleNames\": [\"Member\", \"Moderator\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/admin/editroles/simon",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"editroles",
+						"simon"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ApprovePhoto",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/admin/approvePhoto/11",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"approvePhoto",
+						"11"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RejectPhoto",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{token}}"
+					},
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "{{ApiHost}}/api/admin/rejectPhoto/12",
+					"host": [
+						"{{ApiHost}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"rejectPhoto",
+						"12"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "f6827e66-dec1-4a73-aabf-3b0478305eb9",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "3e072a32-bf40-456d-9cb3-df3db1df4f63",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
